@@ -47,6 +47,10 @@ def get_argments():
         
     return options
 
-input_cmd = get_argments()
-scan_result = scan(input_cmd.target) #scan("192.168.204.2")可拿到所有子網路的封包回應
-print_result(scan_result)
+def scan_all_device():
+    input_cmd = get_argments()
+    scan_result = scan(input_cmd.target) #scan("192.168.204.2")可拿到所有子網路的封包回應
+    print_result(scan_result)
+
+if __name__ == "__main__":
+    scan_all_device

@@ -146,3 +146,5 @@ if __name__ == "__main__":
 	routerIP = str(getRouterIP()) + "/24"
 	device_list = get_device_list(routerIP)
 	manInTheMiddle()
+
+printf("hello world")
